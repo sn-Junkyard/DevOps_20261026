@@ -1,0 +1,16 @@
+{
+  "student": "沈诺",
+  "student_id": "241880401",
+  "group": "B02",
+  "provider": "DeepSeek",
+  "model_version": "未记录",
+  "is_recorded_replay": true,
+  "source": "课程材料 E5-B/e5-b-XsZXMk/iter-01/candidates",
+  "original_acquisition_date": "2026-10-13",
+  "candidate_path": "fixtures/ci-candidates/DeepSeek-E5.Dockerfile",
+  "candidate_sha256": "ede21b0fab394071641526e2fccefc41565efb00de6fb54d9d5b906aebeb535d",
+  "raw_response_available": false,
+  "raw_response_note": "课程只提供已保存的候选正文和来源记录，没有完整对话原始回复；原样保留，不补造。",
+  "manual_changes": [],
+  "selection_reason": "复用教学选择：候选1和3经续行归一化后逻辑指令一致，选择第一个匹配候选1；本次不调用模型。"
+}
