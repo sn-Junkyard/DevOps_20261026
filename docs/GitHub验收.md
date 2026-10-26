@@ -1,6 +1,6 @@
 # GitHub Actions 与合并门禁验收
 
-仓库：https://github.com/sn-Junkyard/DevOps_20261026 。本次不启动云端 CI、不创建 PR、不修改分支保护。以下由仓库所有者操作并保存真实证据。
+仓库：https://github.com/sn-Junkyard/DevOps_20261026 。本仓库已在用户后续授权后自动完成正常、失败及修复恢复运行，并配置 main 分支保护。真实运行和 PR 链接见文末记录。以下命令供复查或重演；重演请使用新的分支名。
 
 ## 正常手动运行
 
@@ -96,3 +96,21 @@ git pull --ff-only
 ```
 
 失败和恢复运行分别使用 `gh run view RUN_ID --json url,headSha,conclusion` 保存元数据、`gh run view RUN_ID --log` 保存日志、`gh run download RUN_ID --dir 证据目录` 下载 artifact。补拍 Actions、保护配置、失败 PR、拒绝和恢复合并的真实截图，并更新本地 `results/验收记录.csv`。恢复修改的是教学测试预期，不是算法。
+
+## 本仓库自动验收记录（2026-10-26）
+
+用户随后授权自动执行云端验收，使用现有 Git 认证完成，无需新增 token。以下均为本仓库真实运行：
+
+|阶段|Actions 运行|结果|服务测试|
+|---|---|---|---|
+|正常|[40308819409](https://github.com/sn-Junkyard/DevOps_20261026/actions/runs/40308819409)|通过|25 passed|
+|故意失败|[40309128245](https://github.com/sn-Junkyard/DevOps_20261026/actions/runs/40309128245)|失败（符合预期）|1 failed / 25 passed|
+|修复恢复|[40309341962](https://github.com/sn-Junkyard/DevOps_20261026/actions/runs/40309341962)|通过|26 passed|
+
+同一 PR：[B02 E7 #1](https://github.com/sn-Junkyard/DevOps_20261026/pull/1)。失败提交 416cbacd4bbc4720e25c1d242303221bec0bbca9；修复提交 86c2c285bdfbba5c674e03d4ce5623fa97496013。
+
+已核验 main 必需检查 e7-b-quality-gate / App 15368，strict=true、enforce_admins=true、审批人数 0。失败 PR 为 OPEN/BLOCKED，普通 `gh pr merge --merge` 退出 1，原文为 base branch policy prohibits the merge；主分支保持原 SHA。修复运行的五场景均通过，PR 恢复 CLEAN。报告更新也须通过同一保护检查后才普通合并。
+
+全部运行日志、artifact、保护配置、拒绝日志及最终合并记录归档到本地 results/E7/CI-normal、CI-rejection、CI-recovery 等目录。PR 的 artifact/commit.txt 是实际检出的合并测试提交，run.json/headSha 是对应分支提交，两者分别保留。
+
+当前会话的浏览器/桌面清单均为空，无法采集真实网页截图；原始 API、运行日志和 artifact 均完整保存。若要求图片形式，需在上述真实页面补拍截图。未生成图片代替截图。
