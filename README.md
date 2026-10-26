@@ -24,4 +24,4 @@ python3 scripts/lab_cloud.py gate --replay --out work/e7-01 --build-timeout 600
 
 ## 交付与 CI
 
-完整本机证据及报告在 `../results/`，不加入 Git。仓库保留[实验报告](docs/实验报告.md)及[GitHub 验收步骤](docs/GitHub验收.md)。workflow 支持手动触发和 main 的 PR 检查，普通 push 不触发，首次请手动启动。无需模型密钥。
+完整本机证据及报告在 `../results/`，不加入 Git。仓库保留[实验报告](docs/实验报告.md)及[GitHub 验收步骤](docs/GitHub验收.md)。workflow 支持手动触发和 main 的 PR 检查，普通 push 不触发。首次云端正常、失败与恢复验收已自动完成，真实运行和 PR 链接见实验报告；后续仍可手动运行。无需模型密钥。
