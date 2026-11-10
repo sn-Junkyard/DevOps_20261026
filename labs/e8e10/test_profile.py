@@ -39,4 +39,48 @@ class ProfileTests(unittest.TestCase):
         (self.p/'Makefile').write_text((self.p/'Makefile').read_text().replace('-O0','-include unknown.h'))
         with self.assertRaisesRegex(ValueError,'UNSUPPORTED_FLAGS'):scan(self.p)
 
+class StudentBTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        self.p = self.root / 'sample'
+        fixture(self.p)
+
+    def test_redundant_only_does_not_remove_dependency(self):
+        report = scan(self.p)
+        report['findings'] = [f for f in report['findings'] if f['type'] == 'REDUNDANT']
+        before = (self.p / 'Makefile').read_bytes()
+        diff, plan = patch(self.p, report)
+        self.assertEqual((diff, plan), ('', []))
+        self.assertEqual((self.p / 'Makefile').read_bytes(), before)
+        self.assertIn(b'unused.h', before)
+
+    def test_duplicate_declarations_are_deduplicated_in_report(self):
+        makefile = self.p / 'Makefile'
+        makefile.write_text(makefile.read_text().replace('main.c unused.h', 'main.c unused.h unused.h'))
+        commit(self.p, 'duplicate declared dependency')
+        report = scan(self.p)
+        self.assertEqual(report['declared']['main.o'].count('unused.h'), 1)
+        diff, plan = patch(self.p, report)
+        self.assertIn('+main.o: main.c unused.h unused.h config.h', diff)
+        self.assertEqual(len(plan), 1)
+        self.assertNotIn('config.h', makefile.read_text())
+
+    def test_build_failure_rejects_patch_and_preserves_source(self):
+        from lab import validate
+        diff, _ = patch(self.p, scan(self.p))
+        candidate = self.root / 'candidate.patch'
+        candidate.write_text(diff)
+        before = (self.p / 'Makefile').read_bytes()
+        (self.p / 'main.c').write_text('this is invalid C;\n')
+        result = validate(self.p, candidate, self.root / 'validation')
+        self.assertTrue(result['checks']['patch_applies'])
+        self.assertFalse(result['checks'].get('build', False))
+        self.assertIn('COMMAND_FAILED', result['error'])
+        self.assertFalse(result['accepted'])
+        self.assertTrue(result['rollback'])
+        self.assertTrue(result['source_unchanged'])
+        self.assertEqual((self.p / 'Makefile').read_bytes(), before)
+
 if __name__=='__main__':unittest.main()
