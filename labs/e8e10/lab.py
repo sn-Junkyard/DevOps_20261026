@@ -94,7 +94,7 @@ def patch(p,report):
     diff=''.join(difflib.unified_diff(original.splitlines(True),changed.splitlines(True),fromfile='a/Makefile',tofile='b/Makefile'))
     return diff,edits
 
-def validate(p, patchfile, evidence, fail_test=False):
+def validate(p, patchfile, evidence, fail_test=False, value_macro='VALUE'):
     evidence.mkdir(parents=True); before=(p/'Makefile').read_bytes()
     sandbox=evidence/'sandbox'; shutil.copytree(p,sandbox,ignore=shutil.ignore_patterns('.git','*.o','app'))
     run(['git','init','-b','main'],sandbox)
@@ -108,7 +108,12 @@ def validate(p, patchfile, evidence, fail_test=False):
         log=run(['make','clean'],sandbox)+run(['make','app'],sandbox);(evidence/'build.log').write_text(log);checks['build']=True
         output=run(['./app'],sandbox).strip(); checks['test']=output==('99' if fail_test else '1')
         # Real header-change build checks the originally broken incremental behavior.
-        time.sleep(1.05); (sandbox/'config.h').write_text('#define VALUE 2\n')
+        header=sandbox/'config.h'
+        contents=header.read_text()
+        if not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', value_macro): raise ValueError('INVALID_VALIDATION_MACRO')
+        changed,count=re.subn(r'(?m)^(\s*#\s*define\s+'+re.escape(value_macro)+r'\s+)1\s*$',r'\g<1>2',contents)
+        if count != 1: raise ValueError('VALIDATION_MACRO_NOT_FOUND')
+        time.sleep(1.05); header.write_text(changed)
         (evidence/'incremental.log').write_text(run(['make','app'],sandbox))
         checks['header_change']=run(['./app'],sandbox).strip()=='2'
         recheck=scan(sandbox); save(evidence/'recheck.json',recheck)
